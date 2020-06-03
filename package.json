@@ -1,0 +1,16 @@
+{
+  "name": "k8s-deploy-inspect",
+  "version": "1.0.0",
+  "description": "Simple K8s cluster inspection tool for retreiving deployment information.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Andy Stoica",
+  "license": "ISC",
+  "dependencies": {
+    "kubernetes-client": "^9.0.0",
+    "moment": "^2.26.0",
+    "table": "^5.4.6"
+  }
+}
