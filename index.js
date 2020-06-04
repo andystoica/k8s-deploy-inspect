@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const Client = require('kubernetes-client').Client;       // K8S Client libray
 const { table, getBorderCharacters } = require('table');  // Used for formatting tables
 const moment = require('moment');                         // Data formatting
@@ -9,6 +10,11 @@ function formatDeployments(ns, deployments) {
   // Table configuration
   const tableConfig = {
     border: getBorderCharacters('norc'),
+    columns: {
+      0: { width: 20 },
+      1: { width: 40 },
+      2: { }
+    }
   };
 
   // Table header
