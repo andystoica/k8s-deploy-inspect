@@ -8,11 +8,11 @@ Clone the Git repository, install the npm dependencies and link the bin command 
 The *kubernetes-client* module is configured automatically by trying the `KUBECONFIG` environment variable first, then `~/.kube/config`, then an in-cluster service account, and lastly settling on a default proxy configuration.
 
 ```
-git clone https://github.com/andystoica/k8s-deploy-inspect
-cd k8s-deploy-inspect
-npm install
+git clone https://github.com/andystoica/k8s-deploy-inspect && \
+cd k8s-deploy-inspect && \
+npm install && \
 npm link
 ```
 
 ## Usage
-Simply use `kdi` to read the list of deployments, their creation date and associated images. Alternatively, you can use either `npm start` or `node index.js` in the project directory.
+Simply use `kdi` to read the list of deployments, their creation date and associated images. Alternatively, you can use either `npm start` or `node ./src/index.js` in the project directory.

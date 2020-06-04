@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const Client = require('kubernetes-client').Client;       // K8S Client libray
-const { table, getBorderCharacters } = require('table');  // Used for formatting tables
+const { table, getBorderCharacters } = require('table');  // Table formatting
 const moment = require('moment');                         // Data formatting
 
 

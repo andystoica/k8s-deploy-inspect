@@ -4,10 +4,10 @@
   "description": "Simple K8s cluster inspection tool for retreiving deployment information.",
   "main": "index.js",
   "bin": {
-    "kdi": "./index.js"
+    "kdi": "./src/index.js"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node ./src/index.js"
   },
   "author": "Andy Stoica",
   "license": "ISC",
