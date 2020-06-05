@@ -1,69 +1,104 @@
 #!/usr/bin/env node
-const Client = require('kubernetes-client').Client;       // K8S Client libray
+const Client = require('kubernetes-client').Client;       // K8S Client library
 const { table, getBorderCharacters } = require('table');  // Table formatting
 const moment = require('moment');                         // Data formatting
 
 
-
-function formatDeployments(ns, deployments) {
-
-  // Table configuration
-  const tableConfig = {
-    border: getBorderCharacters('norc'),
-    columns: {
-      0: { width: 20 },
-      1: { width: 40 },
-      2: { }
-    }
-  };
-
-  // Table header
-  const data = [[
-    'DEPLOYMENT',
-    'IMAGE(s)',
-    'UPDATED ON'
-  ]];
-
-  // Table rows and corresponding data columns
-  deployments.body.items.forEach((deployment) => {
-    data.push([
-      deployment.metadata.name,
-      deployment.spec.template.spec.containers.map((container) => container.image).join('\n'),
-      moment(deployment.metadata.creationTimestamp).format('DD-MM-YYYY HH:mm:ss')
-    ]);
-  });
-
-  // Information displayed before each table
-  const infoMessage = ` NAMESPACE: ${ns}\n`;
-  return infoMessage + table(data, tableConfig);
+// Extracts the creationTimestamp from the active
+// replicaset associated with a particular deployment
+function getLastUpdate(deployment, replicasets) {
+  const uid = deployment.metadata.uid;
+  
+  // Filter out the replicaset by keeping only those
+  // owned by the deployment and having at least 1 replica
+  const rs = replicasets.filter(replicaset => 
+    replicaset.metadata.ownerReferences
+      .map(ref => ref.uid)
+      .includes(uid) &&
+    replicaset.spec.replicas !== 0
+  );
+  
+  // Return the first item or null if no replicaset could be found
+  return  (rs.length > 0) ? rs[0].metadata.creationTimestamp : null;
 }
 
 
+// Formats data for output as a table
+function renderTable(data) {
+  
+  const tableConfig = {
+    border: getBorderCharacters('norc')
+  };
+  
+  const output = [[
+    'DEPLOYMENT',
+    'IMAGE(s)',
+    'LAST UPDATED'
+  ]];
+  
+  data.forEach(item => output.push([
+    item.name,
+    item.images.join('\n'),
+    item.lastUpdate
+  ]));
+  
+  return table(output ,tableConfig);
+  
+}
 
-async function main() {
+
+async function main() {  
+  
+  // Keep the first argument as the namespace or
+  // exit if no arguments are provided.
+  const args = process.argv.slice(2);
+  if (args.length === 0) {
+    console.log('Usage: kdi <namespace>');
+    process.exitCode = 1;
+    return;
+  }
+  
+  const namespace = args[0];
+  const data = [];
+  let deployments;
+  let replicasets;
+  
   try {
-    // Initialise API Client    
-    const client = new Client({ version: '1.13' });    
+    // Query the API for deployments and replicasets
+    let response;
+    const client = new Client({ version: '1.13' });
     
-    // Get a list of all namespaces
-    const namespaces = await client.api.v1.namespaces.get();
+    response = await client.apis.apps.v1.namespaces(namespace).deployments.get();
+    deployments = response.body.items;
+    
+    response = await client.apis.apps.v1.namespaces(namespace).replicasets.get();
+    replicasets = response.body.items;
 
-    // Iterate through namespace and display their deployments
-    namespaces.body.items
-      .map((item) => item.metadata.name)
-      .forEach(async (namespace) => {
-        const deployments = await client.apis.apps.v1.namespaces(namespace).deployments.get();
-        
-        // Only show namespaces which contain deployments
-        if (deployments.body.items.length)
-          console.log(formatDeployments(namespace, deployments));
-      });
-      
   } catch (err) {
     // K8s API error handling
-    console.error('Error: Could not connect to Kubernetes.');
+    console.error('Error: Could not connect to Kubernetes.', err);
     process.exitCode = 1;
+    return;
   }
+  
+  if (deployments.length === 0) {
+      console.log('Error: no deployment found in this namespace.');
+      process.exitCode = 1;
+      return;
+    }
+    
+    // For each deployment, extract the required information
+    deployments.forEach(deployment => {
+      data.push({
+        name: deployment.metadata.name,
+        images: deployment.spec.template.spec.containers.map(container => container.image),
+        lastUpdate: moment(getLastUpdate(deployment, replicasets)).format('DD-MM-YYYY HH:mm:ss')
+      });
+    });
+    
+    // Display the information as a table
+    console.log(`\n Deployment information for '${namespace}' namespace`)
+    console.log(renderTable(data));
 }
 
 main();

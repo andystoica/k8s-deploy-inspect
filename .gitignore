@@ -48,3 +48,5 @@ bin
 npm-debug.log
 compressed
 *.css.map
+project-log.md
+.vscode
