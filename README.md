@@ -15,4 +15,4 @@ npm link
 ```
 
 ## Usage
-Simply use `kdi` to read the list of deployments, their creation date and associated images. Alternatively, you can use either `npm start` or `node ./src/index.js` in the project directory.
+Simply use `kdi` to read the list of deployments, their associated images and the date of their last update. Alternatively, you can use either `npm start` or `node ./src/index.js` in the project directory.
