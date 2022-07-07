@@ -18,7 +18,7 @@
   "dependencies": {
     "bufferutil": "^4.0.1",
     "kubernetes-client": "^9.0.0",
-    "moment": "^2.26.0",
+    "moment": "^2.29.4",
     "table": "^5.4.6",
     "utf-8-validate": "^5.0.2"
   }
